@@ -1,0 +1,6 @@
+{
+  "name": "Quarterly Report Merger",
+  "description": "An interactive tool for hospital report aggregation. Upload 3 monthly Excel reports, extract status and rejection tables for all 7 clinics, and merge them into a professionally formatted Quarterly Report with detailed validation and summary aggregates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
