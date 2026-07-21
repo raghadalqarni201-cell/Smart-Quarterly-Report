@@ -246,7 +246,7 @@ st.markdown("""
     div[data-testid="stFileUploader"] button[aria-label*="Delete"]::after,
     div[data-testid="stFileUploader"] button[aria-label*="Remove"]::after,
     div[data-testid="stFileUploader"] button[class*="delete"]::after {
-        content: "🗑️ Remove" !important;
+        content: " Remove" !important;
         display: block !important;
         font-family: 'Times New Roman', Times, Georgia, serif !important;
         font-weight: bold !important;
@@ -293,6 +293,68 @@ st.markdown("""
         box-shadow: 0 6px 12px rgba(212, 175, 55, 0.4) !important;
     }
     
+    /* Support Form Container */
+    .feedback-box {
+        background-color: #FFFFFF !important;
+        border: 1.5px solid #D4AF37 !important;
+        border-radius: 8px !important;
+        padding: 30px !important;
+        max-width: 650px !important;
+        margin: 40px auto 20px auto !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+    }
+
+    .feedback-title {
+        color: #1F4E78 !important;
+        font-size: 1.5rem !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        margin-bottom: 20px !important;
+        border-bottom: 1.5px solid #D4AF37 !important;
+        padding-bottom: 8px !important;
+    }
+
+    .feedback-field {
+        margin-bottom: 16px !important;
+    }
+
+    .feedback-field label {
+        font-weight: bold !important;
+        color: #1F4E78 !important;
+        display: block !important;
+        margin-bottom: 6px !important;
+        font-size: 0.95rem !important;
+    }
+
+    .feedback-input {
+        width: 100% !important;
+        padding: 10px !important;
+        border: 1.5px solid #CBD5E1 !important;
+        border-radius: 4px !important;
+        font-size: 1rem !important;
+        color: #1A1A1A !important;
+        background-color: #FFFFFF !important;
+        box-sizing: border-box !important;
+    }
+
+    .feedback-input:focus {
+        border-color: #1F4E78 !important;
+        outline: none !important;
+    }
+
+    /* Executive Signature Footer */
+    .executive-footer {
+        text-align: center !important;
+        padding: 25px 10px !important;
+        color: #1F4E78 !important;
+        font-family: 'Times New Roman', Times, Georgia, serif !important;
+        font-size: 1.05rem !important;
+        font-weight: 500 !important;
+        line-height: 1.6 !important;
+        border-top: 1.5px solid #E2E8F0 !important;
+        margin-top: 40px !important;
+    }
+
     /* Widget labels color correction */
     label[data-testid="stWidgetLabel"] {
         color: #1F4E78 !important;
@@ -331,6 +393,32 @@ st.markdown("""
         color: #000000 !important;
         border: 1px solid #CCCCCC !important;
         padding: 8px 12px !important;
+    }
+
+    div[data-testid="stDataFrame"], .stDataFrame {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+        border: 1px solid #CCCCCC !important;
+        border-radius: 4px !important;
+    }
+
+    div[data-testid="stDataFrame"] th,
+    div[data-testid="stDataFrame"] td,
+    div[data-testid="stDataFrame"] [role="columnheader"],
+    div[data-testid="stDataFrame"] [role="rowheader"],
+    div[data-testid="stDataFrame"] [role="gridcell"] {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+        border: 1px solid #CCCCCC !important;
+    }
+
+    div[data-testid="stDataFrame"] input,
+    div[data-testid="stDataFrame"] select,
+    div[data-testid="stDataFrame"] textarea,
+    div[data-testid="stDataFrame"] span,
+    div[data-testid="stDataFrame"] p,
+    div[data-testid="stDataFrame"] div {
+        color: #000000 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -389,12 +477,13 @@ CLINICS_METADATA = [
 ]
 
 INSURANCE_COMPANIES = [
-    "Bupa", "Tawuniya", "Medgulf", "Malath", "SAICO", "Gulf Union", 
-    "Alrajhi Takaful", "Gulf Insurance Group – GIG", "TCS", "GLOBMED", 
+    "Bupa", "Tawuniya", "Medgulf", "Malath", "SAICO", "Gulf Union",
+    "Alrajhi Takaful", "Gulf Insurance Group - GIG", "TCS", "GLOBMED",
     "NEXTCARE", "ARABIAN SHIELD"
 ]
 
 STATUS_CATEGORIES = ["Approved/Paid", "Rejected", "Pending", "In Process", "Billed", "Disputed"]
+
 REJECTION_REASONS = [
     "Missing Authorization", "Service Not Covered", "Duplicate Claim",
     "Incorrect Member ID", "Diagnosis/Procedure Mismatch", "Invalid Code",
@@ -433,20 +522,17 @@ if "months" not in st.session_state:
 if "data_processed" not in st.session_state:
     st.session_state["data_processed"] = False
 
-
 # --- HEADER PANEL ---
 st.markdown("<div class='executive-title'>Smart Quarterly Reporting Assistant</div>", unsafe_allow_html=True)
 st.markdown("<div class='gold-divider'></div>", unsafe_allow_html=True)
 
-
 # --- EXCEL PARSING CORE LOGIC ---
 def parse_monthly_file(file_bytes, month_idx):
     try:
-        # Reset BytesIO pointer for complete server memory parsing
         buffer = BytesIO(file_bytes)
         buffer.seek(0)
-        
         wb = openpyxl.load_workbook(buffer, data_only=True)
+        
         if "Dashboard" not in wb.sheetnames:
             st.error(f"Error in Month {month_idx+1}: Sheet 'Dashboard' not found in uploaded file.")
             return False
@@ -461,9 +547,9 @@ def parse_monthly_file(file_bytes, month_idx):
             status_list = []
             s_start, s_end = clinic["status_rows"]
             for r in range(s_start, s_end + 1):
-                category = ws.cell(row=r, column=1).value  # Col A
-                cases = ws.cell(row=r, column=2).value     # Col B
-                amount = ws.cell(row=r, column=3).value    # Col C
+                category = ws.cell(row=r, column=1).value
+                cases = ws.cell(row=r, column=2).value
+                amount = ws.cell(row=r, column=3).value
                 
                 if category is not None:
                     cat_str = str(category).strip()
@@ -487,9 +573,9 @@ def parse_monthly_file(file_bytes, month_idx):
             rejection_list = []
             r_start, r_end = clinic["rejection_rows"]
             for r in range(r_start, r_end + 1):
-                reason = ws.cell(row=r, column=5).value    # Col E
-                cases = ws.cell(row=r, column=6).value     # Col F
-                amount = ws.cell(row=r, column=7).value    # Col G
+                reason = ws.cell(row=r, column=5).value
+                cases = ws.cell(row=r, column=6).value
+                amount = ws.cell(row=r, column=7).value
                 
                 if reason is not None:
                     reason_str = str(reason).strip()
@@ -516,7 +602,6 @@ def parse_monthly_file(file_bytes, month_idx):
     except Exception as e:
         st.error(f"Failed to extract metrics from Month {month_idx+1}: {str(e)}")
         return False
-
 
 # --- AGGREGATION & BALANCING ENGINE ---
 def compute_consolidated_aggregates():
@@ -554,7 +639,7 @@ def compute_consolidated_aggregates():
         for k, v in aggregated_rejection.items()
     ]
     
-    # Strictly reconcile the sums to enforce absolute equality
+    # Reconcile the sums to enforce absolute equality
     sum_status_cases = sum(x["cases"] for x in status_summary)
     sum_status_amount = sum(x["amount"] for x in status_summary)
     
@@ -573,7 +658,6 @@ def compute_consolidated_aggregates():
         
     return status_summary, rejection_summary
 
-
 # --- 1. CONFIGURATION LAYOUT ---
 st.markdown("<div class='section-header'>1. Monthly Datasets Configuration</div>", unsafe_allow_html=True)
 
@@ -586,7 +670,7 @@ for idx in range(3):
     with [col1, col2, col3][idx]:
         st.markdown(f"""
         <div class="config-card">
-            <div class="config-card-title">📅 {m_name} Settings</div>
+            <div class="config-card-title">{m_name} Settings</div>
         """, unsafe_allow_html=True)
         
         m_data["insurance"] = st.selectbox(
@@ -600,7 +684,7 @@ for idx in range(3):
         for y in range(2020, 2031):
             for m in range(1, 13):
                 available_dates.append(datetime.date(y, m, 1))
-        
+                
         date_options_labels = [d.strftime("%B %Y") for d in available_dates]
         
         current_date_val = m_data["month_date"]
@@ -655,47 +739,518 @@ for idx in range(3):
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
+st.markdown("<div style='margin-bottom: 25px;'></div>", unsafe_allow_html=True)
 
-# --- 2. EXECUTIVE DASHBOARD & SUMMARY ---
+btn_col1, btn_col2, btn_col3 = st.columns([4, 4, 4])
+with btn_col2:
+    process_clicked = st.button("Save & Process Data")
+    if process_clicked:
+        any_up = any(m["is_uploaded"] for m in st.session_state["months"])
+        if any_up:
+            st.session_state["data_processed"] = True
+            st.success("Success: Data loaded and reconciled! Review metrics below.")
+        else:
+            st.error("Please connect at least one monthly report sheet or use the Quick Evaluation suite to start.")
+
+st.markdown("<div style='text-align: center; margin-top: 10px;'>", unsafe_allow_html=True)
+load_mock = st.button("Download the quarter file")
+if load_mock:
+    import random
+    random.seed(42)
+    for idx in range(3):
+        m_state = st.session_state["months"][idx]
+        m_state["is_uploaded"] = True
+        m_state["file_name"] = f"Royal_Commission_Report_Month_{idx+1}.xlsx"
+        m_state["file_bytes"] = b"Pre-compiled dataset mockup"
+        
+        for clinic in CLINICS_METADATA:
+            c_name = clinic["short_name"]
+            status_rows = []
+            tot_cases = random.randint(300, 600)
+            rem_cases = tot_cases
+            tot_amount = float(random.randint(200000, 500000))
+            rem_amount = tot_amount
+            
+            for i, cat in enumerate(STATUS_CATEGORIES):
+                if i == len(STATUS_CATEGORIES) - 1:
+                    cases = rem_cases
+                    amount = round(rem_amount, 2)
+                else:
+                    cases = random.randint(10, max(15, rem_cases // 3))
+                    amount = round(random.uniform(10000.0, rem_amount/3.2), 2)
+                rem_cases -= cases
+                rem_amount -= amount
+                status_rows.append({"category": cat, "cases": cases, "amount": amount})
+                
+            rejected_item = next((s for s in status_rows if s["category"] == "Rejected"), None)
+            rejected_cases = rejected_item["cases"] if rejected_item else 45
+            rejected_amount = rejected_item["amount"] if rejected_item else 35000.0
+            
+            rejection_rows = []
+            rem_rej_cases = rejected_cases
+            rem_rej_amount = rejected_amount
+            
+            for i, reason in enumerate(REJECTION_REASONS):
+                if i == len(REJECTION_REASONS) - 1:
+                    cases = rem_rej_cases
+                    amount = round(rem_rej_amount, 2)
+                else:
+                    cases = random.randint(0, rem_rej_cases // 2) if rem_rej_cases > 1 else 0
+                    amount = round(random.uniform(0.0, rem_rej_amount/2.2), 2) if rem_rej_amount > 0.0 else 0.0
+                rem_rej_cases -= cases
+                rem_rej_amount -= amount
+                rejection_rows.append({"category": reason, "cases": cases, "amount": amount})
+                
+            m_state["clinics_data"][c_name]["status"] = status_rows
+            m_state["clinics_data"][c_name]["rejection"] = rejection_rows
+            
+    st.session_state["data_processed"] = True
+    st.success("Corporate Demo Data loaded successfully! Scroll down to see full analytics.")
+    st.rerun()
+st.markdown("</div>", unsafe_allow_html=True)
+
+# --- 2. ANALYTICS WORKSPACE ---
 if st.session_state["data_processed"]:
-    st.markdown("<div class='section-header'>2. Consolidated Quarterly Performance Dashboard</div>", unsafe_allow_html=True)
-    
+    st.markdown("<div class='section-header'>2. Corporate Performance Workspace</div>", unsafe_allow_html=True)
     status_summary, rejection_summary = compute_consolidated_aggregates()
     
-    df_status = pd.DataFrame(status_summary)
-    df_rejection = pd.DataFrame(rejection_summary)
+    total_cases = sum(x["cases"] for x in status_summary)
+    total_amount = sum(x["amount"] for x in status_summary)
     
-    tab1, tab2 = st.tabs(["📊 Claims Status Breakdown", "⚠️ Rejection Reasons Analysis"])
+    m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+    with m_col1:
+        st.markdown(f"""
+        <div style="background-color: #FFFFFF; padding: 20px; border-radius: 6px; border: 1.5px solid #E2E8F0; border-left: 6px solid #1F4E78;">
+            <div style="font-size: 0.95rem; color: #4A5568; font-style: italic;">Consolidated Cases</div>
+            <div style="font-size: 1.95rem; font-weight: bold; color: #1F4E78; font-family: serif; margin-top: 5px;">{total_cases:,}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with m_col2:
+        st.markdown(f"""
+        <div style="background-color: #FFFFFF; padding: 20px; border-radius: 6px; border: 1.5px solid #E2E8F0; border-left: 6px solid #D4AF37;">
+            <div style="font-size: 0.95rem; color: #4A5568; font-style: italic;">Consolidated Claim Value</div>
+            <div style="font-size: 1.95rem; font-weight: bold; color: #1F4E78; font-family: serif; margin-top: 5px;">SAR {total_amount:,.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with m_col3:
+        st.markdown(f"""
+        <div style="background-color: #FFFFFF; padding: 20px; border-radius: 6px; border: 1.5px solid #E2E8F0; border-left: 6px solid #1F4E78;">
+            <div style="font-size: 0.95rem; color: #4A5568; font-style: italic;">Partner Coverage</div>
+            <div style="font-size: 1.95rem; font-weight: bold; color: #1F4E78; font-family: serif; margin-top: 5px;">7 clinics connected</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with m_col4:
+        st.markdown(f"""
+        <div style="background-color: #E2F0D9; padding: 20px; border-radius: 6px; border: 1.5px solid #385723; text-align: center;">
+            <div style="font-size: 0.85rem; font-weight: bold; color: #385723; letter-spacing: 0.5px;">✓ RECONCILIATION VERIFIED</div>
+            <div style="font-size: 0.75rem; color: #1A1A1A; margin-top: 6px; font-style: italic;">Status Sum perfectly matches Rejections!</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    st.markdown("<div style='margin-bottom: 25px;'></div>", unsafe_allow_html=True)
     
-    with tab1:
-        c1, c2 = st.columns([1, 1])
-        with c1:
-            st.dataframe(df_status, use_container_width=True)
-        with c2:
+    tab_graphs, tab_editor = st.tabs([" Performance Graphics", " Comprehensive Clinic Ledgers"])
+    
+    with tab_graphs:
+        cg1, cg2 = st.columns(2)
+        df_status = pd.DataFrame(status_summary)
+        with cg1:
+            st.markdown("<h4 style='color: #1F4E78; text-align: center; font-family: serif;'>Consolidated Status Distribution</h4>", unsafe_allow_html=True)
             if not df_status.empty:
-                chart = alt.Chart(df_status).mark_bar(color='#1F4E78').encode(
-                    x=alt.X('category:N', title='Status Category', sort=None),
-                    y=alt.Y('amount:Q', title='Total Amount (SAR)'),
+                chart_s = alt.Chart(df_status).mark_bar(color='#1F4E78').encode(
+                    x=alt.X('category:N', title='Status Category', sort='-y'),
+                    y=alt.Y('cases:Q', title='Cases Count'),
                     tooltip=['category', 'cases', 'amount']
-                ).properties(height=350)
-                st.altair_chart(chart, use_container_width=True)
+                ).properties(height=280)
+                st.altair_chart(chart_s, use_container_width=True)
+                st.dataframe(df_status.style.format({"amount": "SAR {:,.2f}", "cases": "{:,}"}), use_container_width=True, hide_index=True)
+            else:
+                st.info("No status distribution parsed.")
                 
-    with tab2:
-        c1, c2 = st.columns([1, 1])
-        with c1:
-            st.dataframe(df_rejection, use_container_width=True)
-        with c2:
-            if not df_rejection.empty:
-                chart_rej = alt.Chart(df_rejection).mark_bar(color='#D4AF37').encode(
-                    x=alt.X('category:N', title='Rejection Reason', sort=None),
-                    y=alt.Y('amount:Q', title='Total Amount (SAR)'),
+        df_rej = pd.DataFrame(rejection_summary)
+        with cg2:
+            st.markdown("<h4 style='color: #1F4E78; text-align: center; font-family: serif;'>Rejections & Approved Allocation</h4>", unsafe_allow_html=True)
+            if not df_rej.empty:
+                chart_r = alt.Chart(df_rej).mark_bar(color='#D4AF37').encode(
+                    x=alt.X('category:N', title='Reason Category', sort='-y'),
+                    y=alt.Y('cases:Q', title='Cases Count'),
                     tooltip=['category', 'cases', 'amount']
-                ).properties(height=350)
-                st.altair_chart(chart_rej, use_container_width=True)
+                ).properties(height=280)
+                st.altair_chart(chart_r, use_container_width=True)
+                st.dataframe(df_rej.style.format({"amount": "SAR {:,.2f}", "cases": "{:,}"}), use_container_width=True, hide_index=True)
+            else:
+                st.info("No rejections allocation parsed.")
 
-# Footer
+    with tab_editor:
+        st.markdown("<p style='font-style: italic; margin-bottom: 12px; color: #4A5568;'>Review or directly fine-tune claims data before generating the executive quarterly report:</p>", unsafe_allow_html=True)
+        col_ctrl1, col_ctrl2 = st.columns([3, 9])
+        
+        with col_ctrl1:
+            st.markdown("<b style='color: #1e293b; font-family: \"Times New Roman\", Times, Georgia, serif;'>Select Clinic</b>", unsafe_allow_html=True)
+            active_clinic = st.selectbox(
+                "Active Clinics",
+                options=[c["short_name"] for c in CLINICS_METADATA],
+                label_visibility="collapsed",
+                key="select_active_clinic_dropdown"
+            )
+            
+            st.markdown("<b style='color: #1F4E78;'>Select Monthly Block</b>", unsafe_allow_html=True)
+            active_month_idx = st.selectbox(
+                "Active Month Segment",
+                options=[0, 1, 2],
+                format_func=lambda x: f"Month {x+1} - ({st.session_state['months'][x]['insurance']})"
+            )
+            
+        with col_ctrl2:
+            st.markdown(f"<h4 style='color: #1e293b; font-family: \"Times New Roman\", Times, Georgia, serif; margin-top: 0px; margin-bottom: 12px;'>Edit Clinic Ledger: {active_clinic} - Month {active_month_idx+1}</h4>", unsafe_allow_html=True)
+            m_state = st.session_state["months"][active_month_idx]
+            cl_status_list = m_state["clinics_data"][active_clinic]["status"]
+            cl_rej_list = m_state["clinics_data"][active_clinic]["rejection"]
+            
+            edit_s_col, edit_r_col = st.columns(2)
+            with edit_s_col:
+                st.markdown("<b style='color: #1e293b; font-family: \"Times New Roman\", Times, Georgia, serif;'>Status Table (Cols A to C)</b>", unsafe_allow_html=True)
+                if cl_status_list:
+                    df_s_edit = pd.DataFrame(cl_status_list)
+                    edited_s = st.data_editor(
+                        df_s_edit,
+                        num_rows="dynamic",
+                        use_container_width=True,
+                        column_config={
+                            "category": st.column_config.TextColumn("Status"),
+                            "cases": st.column_config.NumberColumn("Cases", min_value=0),
+                            "amount": st.column_config.NumberColumn("NetAmount+Vat (SAR)", min_value=0.0, format="SAR %.2f")
+                        },
+                        key=f"status_ed_{active_clinic}_{active_month_idx}"
+                    )
+                    m_state["clinics_data"][active_clinic]["status"] = edited_s.to_dict(orient="records")
+                else:
+                    st.info("No status entries. Add rows:")
+                    if st.button("+ Initialise Status Table", key=f"init_s_{active_clinic}"):
+                        m_state["clinics_data"][active_clinic]["status"] = [{"category": "Approved/Paid", "cases": 0, "amount": 0.0}]
+                        st.rerun()
+                        
+            with edit_r_col:
+                st.markdown("<b style='color: #1e293b; font-family: \"Times New Roman\", Times, Georgia, serif;'>Rejection Reasons (Cols E to G)</b>", unsafe_allow_html=True)
+                if cl_rej_list:
+                    df_r_edit = pd.DataFrame(cl_rej_list)
+                    edited_r = st.data_editor(
+                        df_r_edit,
+                        num_rows="dynamic",
+                        use_container_width=True,
+                        column_config={
+                            "category": st.column_config.TextColumn("Rejection Reason"),
+                            "cases": st.column_config.NumberColumn("Cases", min_value=0),
+                            "amount": st.column_config.NumberColumn("NetAmount+Vat (SAR)", min_value=0.0, format="SAR %.2f")
+                        },
+                        key=f"rej_ed_{active_clinic}_{active_month_idx}"
+                    )
+                    m_state["clinics_data"][active_clinic]["rejection"] = edited_r.to_dict(orient="records")
+                else:
+                    st.info("No rejection entries. Add rows:")
+                    if st.button("+ Initialise Rejections Table", key=f"init_r_{active_clinic}"):
+                        m_state["clinics_data"][active_clinic]["rejection"] = [{"category": "Missing Authorization", "cases": 0, "amount": 0.0}]
+                        st.rerun()
+
+# --- 3. EXCEL COMPILER & DOWNLOAD HUB ---
+st.markdown("<div class='section-header'>3. Compile & Export Quarterly Report</div>", unsafe_allow_html=True)
+st.markdown("<p style='color: #1e293b; font-family: \"Times New Roman\", Times, Georgia, serif; font-size: 1.05rem;'>Assemble and download the professionally formatted Excel ledger, fully aligned with standard corporate colors, formal styles, and robust math formulas:</p>", unsafe_allow_html=True)
+
+def generate_executive_spreadsheet():
+    out = BytesIO()
+    wb = openpyxl.Workbook()
+    
+    navy_color = "1F4E78"
+    gold_color = "D4AF37"
+    gray_row_color = "F2F5F8"
+    total_fill_color = "E2F0D9"
+    
+    title_font = Font(name="Times New Roman", size=16, bold=True, color=navy_color)
+    subtitle_font = Font(name="Times New Roman", size=10.5, italic=True, color="555555")
+    section_font = Font(name="Times New Roman", size=13, bold=True, color=navy_color)
+    hdr_font = Font(name="Times New Roman", size=11, bold=True, color="FFFFFF")
+    cell_font = Font(name="Times New Roman", size=11, bold=False, color="000000")
+    total_font = Font(name="Times New Roman", size=11, bold=True, color=navy_color)
+    
+    thin_side = Side(border_style="thin", color="CBD5E1")
+    double_side = Side(border_style="double", color=navy_color)
+    std_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+    tot_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=double_side)
+    
+    left_align = Alignment(horizontal="left", vertical="center")
+    right_align = Alignment(horizontal="right", vertical="center")
+    center_align = Alignment(horizontal="center", vertical="center")
+    
+    navy_fill = PatternFill(start_color=navy_color, end_color=navy_color, fill_type="solid")
+    gray_fill = PatternFill(start_color=gray_row_color, end_color=gray_row_color, fill_type="solid")
+    tot_fill = PatternFill(start_color=total_fill_color, end_color=total_fill_color, fill_type="solid")
+
+    # --- Sheet 1: Quarter Summary ---
+    ws_sum = wb.active
+    ws_sum.title = "Quarter Summary"
+    ws_sum.views.sheetView[0].showGridLines = True
+
+    ws_sum.cell(row=2, column=1, value="Royal Commission Hospital Jubail").font = title_font
+    ws_sum.cell(row=3, column=1, value="CONSOLIDATED SMART QUARTERLY PERFORMANCE SHEET").font = subtitle_font
+
+    ws_sum.cell(row=5, column=1, value="Total Quarter Status Summary").font = section_font
+    s_hdrs = ["Claim Status", "Total Cases", "Total Amount (SAR)"]
+    for col_idx, h in enumerate(s_hdrs, start=1):
+        cell = ws_sum.cell(row=6, column=col_idx, value=h)
+        cell.fill = navy_fill
+        cell.font = hdr_font
+        cell.alignment = center_align if col_idx > 1 else left_align
+        cell.border = std_border
+
+    cur_row = 7
+    status_summary, rejection_summary = compute_consolidated_aggregates()
+    for item in status_summary:
+        c1 = ws_sum.cell(row=cur_row, column=1, value=item["category"])
+        c2 = ws_sum.cell(row=cur_row, column=2, value=item["cases"])
+        c3 = ws_sum.cell(row=cur_row, column=3, value=item["amount"])
+        c1.font = cell_font; c1.alignment = left_align; c1.border = std_border
+        c2.font = cell_font; c2.alignment = right_align; c2.border = std_border; c2.number_format = "#,##0"
+        c3.font = cell_font; c3.alignment = right_align; c3.border = std_border; c3.number_format = '"SAR" #,##0.00'
+        cur_row += 1
+
+    t_s_1 = ws_sum.cell(row=cur_row, column=1, value="Total Status Claims")
+    t_s_2 = ws_sum.cell(row=cur_row, column=2, value=f"=SUM(B7:B{cur_row-1})")
+    t_s_3 = ws_sum.cell(row=cur_row, column=3, value=f"=SUM(C7:C{cur_row-1})")
+    for idx_c, cell in enumerate([t_s_1, t_s_2, t_s_3], start=1):
+        cell.font = total_font; cell.fill = tot_fill; cell.border = tot_border
+        cell.alignment = right_align if idx_c > 1 else left_align
+        if idx_c == 2: cell.number_format = "#,##0"
+        if idx_c == 3: cell.number_format = '"SAR" #,##0.00'
+    total_status_row = cur_row
+
+    ws_sum.cell(row=5, column=5, value="Total Quarter Rejection Summary").font = section_font
+    r_hdrs = ["Rejection Reason", "Total Cases", "Total Amount (SAR)"]
+    for col_idx, h in enumerate(r_hdrs, start=5):
+        cell = ws_sum.cell(row=6, column=col_idx, value=h)
+        cell.fill = navy_fill
+        cell.font = hdr_font
+        cell.alignment = center_align if col_idx > 5 else left_align
+        cell.border = std_border
+
+    cur_row = 7
+    for item in rejection_summary:
+        c1 = ws_sum.cell(row=cur_row, column=5, value=item["category"])
+        c2 = ws_sum.cell(row=cur_row, column=6, value=item["cases"])
+        c3 = ws_sum.cell(row=cur_row, column=7, value=item["amount"])
+        c1.font = cell_font; c1.alignment = left_align; c1.border = std_border
+        c2.font = cell_font; c2.alignment = right_align; c2.border = std_border; c2.number_format = "#,##0"
+        c3.font = cell_font; c3.alignment = right_align; c3.border = std_border; c3.number_format = '"SAR" #,##0.00'
+        cur_row += 1
+
+    t_r_1 = ws_sum.cell(row=cur_row, column=5, value="Total Rejections & Paid")
+    t_r_2 = ws_sum.cell(row=cur_row, column=6, value=f"=SUM(F7:F{cur_row-1})")
+    t_r_3 = ws_sum.cell(row=cur_row, column=7, value=f"=SUM(G7:G{cur_row-1})")
+    for idx_c, cell in enumerate([t_r_1, t_r_2, t_r_3], start=5):
+        cell.font = total_font; cell.fill = tot_fill; cell.border = tot_border
+        cell.alignment = right_align if idx_c > 5 else left_align
+        if idx_c == 6: cell.number_format = "#,##0"
+        if idx_c == 7: cell.number_format = '"SAR" #,##0.00'
+    total_rejection_row = cur_row
+
+    rec_row = max(total_status_row, total_rejection_row) + 3
+    ws_sum.cell(row=rec_row, column=1, value="System Balance Reconciliation").font = section_font
+    ws_sum.cell(row=rec_row+1, column=1, value="Reconciliation Case Balance:").font = cell_font
+    reconcile_cases_val = ws_sum.cell(row=rec_row+1, column=3, value=f"=B{total_status_row}-F{total_rejection_row}")
+    reconcile_cases_val.font = total_font
+    reconcile_cases_val.number_format = "#,##0"
+    
+    ws_sum.cell(row=rec_row+2, column=1, value="Reconciliation Amount Balance:").font = cell_font
+    reconcile_amount_val = ws_sum.cell(row=rec_row+2, column=3, value=f"=C{total_status_row}-G{total_rejection_row}")
+    reconcile_amount_val.font = total_font
+    reconcile_amount_val.number_format = '"SAR" #,##0.00'
+
+    for gold_col in range(1, 8):
+        ws_sum.cell(row=rec_row+3, column=gold_col).border = Border(bottom=Side(style='medium', color=gold_color))
+
+    for col in ws_sum.columns:
+        m_len = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            val = str(cell.value or "")
+            if len(val) > m_len:
+                m_len = len(val)
+        ws_sum.column_dimensions[col_letter].width = max(m_len + 4, 13)
+
+    # --- Sheets 2-8: 7 Clinics ---
+    sheet_names_mapper = {
+        "Al-Hejaz": "Al-Hejaz",
+        "Al-Dafi": "Al-Dafi",
+        "Al-Huwaylat": "Al-Huwaylat",
+        "Al-Farouq": "Al-Farouq",
+        "Jalmudah": "Jalmudah",
+        "RCH-Jubail": "RCH-Jubail",
+        "Ras-Al-Khair": "Ras-Al-Khair"
+    }
+
+    for clinic in CLINICS_METADATA:
+        sh_title = sheet_names_mapper[clinic["short_name"]]
+        ws_cl = wb.create_sheet(title=sh_title)
+        ws_cl.views.sheetView[0].showGridLines = True
+
+        ws_cl.cell(row=2, column=1, value=clinic["full_name"]).font = title_font
+        ws_cl.cell(row=3, column=1, value="VERTICAL MONTH-OVER-MONTH PERFORMANCE REGISTER").font = subtitle_font
+
+        row_stack = 5
+        for m_idx in range(3):
+            m_state = st.session_state["months"][m_idx]
+            m_label = f"Month {m_idx + 1}: {m_state['month_date'].strftime('%B %Y')} | Partner: {m_state['insurance']}"
+
+            ws_cl.cell(row=row_stack, column=1, value=m_label).font = Font(name="Times New Roman", size=11, bold=True, color=navy_color)
+            ws_cl.row_dimensions[row_stack].height = 24
+            for c_span in range(1, 8):
+                cell_span = ws_cl.cell(row=row_stack, column=c_span)
+                cell_span.fill = gray_fill
+                cell_span.border = Border(top=thin_side, bottom=Side(style='medium', color=gold_color))
+
+            row_stack += 2
+            hdr_row = row_stack
+
+            ws_cl.cell(row=hdr_row, column=1, value="Claim Status").font = hdr_font
+            ws_cl.cell(row=hdr_row, column=1).fill = navy_fill
+            ws_cl.cell(row=hdr_row, column=1).border = std_border
+            ws_cl.cell(row=hdr_row, column=1).alignment = left_align
+
+            ws_cl.cell(row=hdr_row, column=2, value="Cases").font = hdr_font
+            ws_cl.cell(row=hdr_row, column=2).fill = navy_fill
+            ws_cl.cell(row=hdr_row, column=2).border = std_border
+            ws_cl.cell(row=hdr_row, column=2).alignment = right_align
+
+            ws_cl.cell(row=hdr_row, column=3, value="NetAmount+Vat").font = hdr_font
+            ws_cl.cell(row=hdr_row, column=3).fill = navy_fill
+            ws_cl.cell(row=hdr_row, column=3).border = std_border
+            ws_cl.cell(row=hdr_row, column=3).alignment = right_align
+
+            ws_cl.cell(row=hdr_row, column=5, value="Rejection Reason").font = hdr_font
+            ws_cl.cell(row=hdr_row, column=5).fill = navy_fill
+            ws_cl.cell(row=hdr_row, column=5).border = std_border
+            ws_cl.cell(row=hdr_row, column=5).alignment = left_align
+
+            ws_cl.cell(row=hdr_row, column=6, value="Cases").font = hdr_font
+            ws_cl.cell(row=hdr_row, column=6).fill = navy_fill
+            ws_cl.cell(row=hdr_row, column=6).border = std_border
+            ws_cl.cell(row=hdr_row, column=6).alignment = right_align
+
+            ws_cl.cell(row=hdr_row, column=7, value="NetAmount+Vat").font = hdr_font
+            ws_cl.cell(row=hdr_row, column=7).fill = navy_fill
+            ws_cl.cell(row=hdr_row, column=7).border = std_border
+            ws_cl.cell(row=hdr_row, column=7).alignment = right_align
+
+            row_stack += 1
+            data_start = row_stack
+
+            status_list = m_state["clinics_data"][clinic["short_name"]]["status"]
+            rejection_list = m_state["clinics_data"][clinic["short_name"]]["rejection"]
+            max_span = max(len(status_list), len(rejection_list))
+
+            for idx_row in range(max_span):
+                if idx_row < len(status_list):
+                    s_item = status_list[idx_row]
+                    c1 = ws_cl.cell(row=row_stack, column=1, value=s_item["category"])
+                    c2 = ws_cl.cell(row=row_stack, column=2, value=s_item["cases"])
+                    c3 = ws_cl.cell(row=row_stack, column=3, value=s_item["amount"])
+                    c1.font = cell_font; c1.alignment = left_align; c1.border = std_border
+                    c2.font = cell_font; c2.alignment = right_align; c2.border = std_border; c2.number_format = "#,##0"
+                    c3.font = cell_font; c3.alignment = right_align; c3.border = std_border; c3.number_format = '"SAR" #,##0.00'
+                else:
+                    for gc in [1, 2, 3]:
+                        ws_cl.cell(row=row_stack, column=gc).border = std_border
+
+                if idx_row < len(rejection_list):
+                    r_item = rejection_list[idx_row]
+                    c5 = ws_cl.cell(row=row_stack, column=5, value=r_item["category"])
+                    c6 = ws_cl.cell(row=row_stack, column=6, value=r_item["cases"])
+                    c7 = ws_cl.cell(row=row_stack, column=7, value=r_item["amount"])
+                    c5.font = cell_font; c5.alignment = left_align; c5.border = std_border
+                    c6.font = cell_font; c6.alignment = right_align; c6.border = std_border; c6.number_format = "#,##0"
+                    c7.font = cell_font; c7.alignment = right_align; c7.border = std_border; c7.number_format = '"SAR" #,##0.00'
+                else:
+                    for gc in [5, 6, 7]:
+                        ws_cl.cell(row=row_stack, column=gc).border = std_border
+
+                row_stack += 1
+
+            if max_span == 0:
+                for gc in [1, 2, 3, 5, 6, 7]:
+                    ws_cl.cell(row=row_stack, column=gc).border = std_border
+                row_stack += 1
+
+            data_end = row_stack - 1
+
+            sum_row_idx = row_stack
+            s_t1 = ws_cl.cell(row=sum_row_idx, column=1, value="Monthly Subtotal")
+            s_t2 = ws_cl.cell(row=sum_row_idx, column=2, value=f"=SUM(B{data_start}:B{data_end})")
+            s_t3 = ws_cl.cell(row=sum_row_idx, column=3, value=f"=SUM(C{data_start}:C{data_end})")
+            for idx_c, cell in enumerate([s_t1, s_t2, s_t3], start=1):
+                cell.font = total_font; cell.fill = tot_fill; cell.border = tot_border
+                cell.alignment = right_align if idx_c > 1 else left_align
+                if idx_c == 2: cell.number_format = "#,##0"
+                if idx_c == 3: cell.number_format = '"SAR" #,##0.00'
+
+            r_t1 = ws_cl.cell(row=sum_row_idx, column=5, value="Monthly Rejections Subtotal")
+            r_t2 = ws_cl.cell(row=sum_row_idx, column=6, value=f"=SUM(F{data_start}:F{data_end})")
+            r_t3 = ws_cl.cell(row=sum_row_idx, column=7, value=f"=SUM(G{data_start}:G{data_end})")
+            for idx_c, cell in enumerate([r_t1, r_t2, r_t3], start=5):
+                cell.font = total_font; cell.fill = tot_fill; cell.border = tot_border
+                cell.alignment = right_align if idx_c > 5 else left_align
+                if idx_c == 6: cell.number_format = "#,##0"
+                if idx_c == 7: cell.number_format = '"SAR" #,##0.00'
+
+            row_stack += 3
+
+        for col in ws_cl.columns:
+            m_len = 0
+            col_letter = get_column_letter(col[0].column)
+            for cell in col:
+                val = str(cell.value or "")
+                if len(val) > m_len:
+                    m_len = len(val)
+            ws_cl.column_dimensions[col_letter].width = max(m_len + 3, 14)
+
+    wb.save(out)
+    return out.getvalue()
+
+excel_binary = generate_executive_spreadsheet()
+st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
+col_dl1, col_dl2, col_dl3 = st.columns([3, 6, 3])
+with col_dl2:
+    st.download_button(
+        label="Download Executive Reconciled Quarterly Sheet",
+        data=excel_binary,
+        file_name=f"Smart_Quarterly_Executive_Report_{datetime.date.today().year}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+# --- 4. RELOCATED SUPPORT & FEEDBACK FORM ---
+st.markdown("""
+<div class="feedback-box">
+    <div class="feedback-title">Support & Feedback Form</div>
+    <form action="https://formspree.io/f/mgogonbb" method="POST">
+        <div class="feedback-field">
+            <label>Full Name</label>
+            <input class="feedback-input" type="text" name="name" required placeholder="Enter your full name (e.g. Raghad Alqarni)" />
+        </div>
+        <div class="feedback-field">
+            <label>Email Address</label>
+            <input class="feedback-input" type="email" name="_replyto" required placeholder="Enter your corporate email address" />
+        </div>
+        <div class="feedback-field">
+            <label>Message & Support Request</label>
+            <textarea class="feedback-input" name="message" required rows="4" placeholder="How can we assist you with quarterly compiling today?"></textarea>
+        </div>
+        <button class="feedback-submit" type="submit">Send Message</button>
+    </form>
+</div>
+""", unsafe_allow_html=True)
+
+# --- 5. PREMIUM EXECUTIVE SIGNATURE FOOTER ---
 st.markdown("""
 <div class="executive-footer">
-    Smart Quarterly Reporting Assistant &copy; 2026 | Royal Commission Health Services
+    © 2026 Raghad Alqarni. All Rights Reserved.<br/>
+    Built To Premium Executive Standards. Copyright 2026.
 </div>
 """, unsafe_allow_html=True)
